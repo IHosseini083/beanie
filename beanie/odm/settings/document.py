@@ -17,10 +17,7 @@ class IndexModelField(IndexModel):
 
     @classmethod
     def validate(cls, v):
-        if isinstance(v, IndexModel):
-            return v
-        else:
-            return IndexModel(v)
+        return v if isinstance(v, IndexModel) else IndexModel(v)
 
 
 class DocumentSettings(ItemSettings):
@@ -59,7 +56,7 @@ class DocumentSettings(ItemSettings):
             {} if collection_class is None else dict(vars(collection_class))
         )
 
-        settings_vars.update(collection_vars)
+        settings_vars |= collection_vars
 
         # ------------------------------------ #
 

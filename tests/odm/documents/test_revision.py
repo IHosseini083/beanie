@@ -14,7 +14,7 @@ async def test_replace():
     doc.num_2 = 3
     await doc.replace()
 
-    for i in range(5):
+    for _ in range(5):
         found_doc = await DocumentWithRevisionTurnedOn.get(doc.id)
         found_doc.num_1 += 1
         await found_doc.replace()
@@ -37,7 +37,7 @@ async def test_update():
     doc.num_2 = 3
     await doc.save_changes()
 
-    for i in range(5):
+    for _ in range(5):
         found_doc = await DocumentWithRevisionTurnedOn.get(doc.id)
         found_doc.num_1 += 1
         await found_doc.save_changes()

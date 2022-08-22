@@ -600,40 +600,37 @@ class FindMany(
 
     @property
     def motor_cursor(self):
-        if self.fetch_links:
-            aggregation_pipeline: List[
-                Dict[str, Any]
-            ] = construct_lookup_queries(self.document_model)
-
-            aggregation_pipeline.append({"$match": self.get_filter_query()})
-
-            sort_pipeline = {
-                "$sort": {i[0]: i[1] for i in self.sort_expressions}
-            }
-            if sort_pipeline["$sort"]:
-                aggregation_pipeline.append(sort_pipeline)
-            if self.skip_number != 0:
-                aggregation_pipeline.append({"$skip": self.skip_number})
-            if self.limit_number != 0:
-                aggregation_pipeline.append({"$limit": self.limit_number})
-
-            projection = get_projection(self.projection_model)
-
-            if projection is not None:
-                aggregation_pipeline.append({"$project": projection})
-
-            return self.document_model.get_motor_collection().aggregate(
-                aggregation_pipeline,
+        if not self.fetch_links:
+            return self.document_model.get_motor_collection().find(
+                filter=self.get_filter_query(),
+                sort=self.sort_expressions,
+                projection=get_projection(self.projection_model),
+                skip=self.skip_number,
+                limit=self.limit_number,
                 session=self.session,
                 **self.pymongo_kwargs,
             )
+        aggregation_pipeline: List[Dict[str, Any]] = construct_lookup_queries(
+            self.document_model
+        )
 
-        return self.document_model.get_motor_collection().find(
-            filter=self.get_filter_query(),
-            sort=self.sort_expressions,
-            projection=get_projection(self.projection_model),
-            skip=self.skip_number,
-            limit=self.limit_number,
+        aggregation_pipeline.append({"$match": self.get_filter_query()})
+
+        sort_pipeline = {"$sort": {i[0]: i[1] for i in self.sort_expressions}}
+        if sort_pipeline["$sort"]:
+            aggregation_pipeline.append(sort_pipeline)
+        if self.skip_number != 0:
+            aggregation_pipeline.append({"$skip": self.skip_number})
+        if self.limit_number != 0:
+            aggregation_pipeline.append({"$limit": self.limit_number})
+
+        projection = get_projection(self.projection_model)
+
+        if projection is not None:
+            aggregation_pipeline.append({"$project": projection})
+
+        return self.document_model.get_motor_collection().aggregate(
+            aggregation_pipeline,
             session=self.session,
             **self.pymongo_kwargs,
         )
@@ -643,9 +640,7 @@ class FindMany(
         Returns the first found element or None if no elements were found
         """
         res = await self.limit(1).to_list()
-        if not res:
-            return None
-        return res[0]
+        return res[0] if res else None
 
 
 class FindOne(FindQuery[FindQueryResultType]):
@@ -836,10 +831,7 @@ class FindOne(FindQuery[FindQueryResultType]):
                 fetch_links=self.fetch_links,
                 **self.pymongo_kwargs,
             ).to_list(length=1)
-            if result:
-                return result[0]
-            else:
-                return None
+            return result[0] if result else None
         return await self.document_model.get_motor_collection().find_one(
             filter=self.get_filter_query(),
             projection=get_projection(self.projection_model),

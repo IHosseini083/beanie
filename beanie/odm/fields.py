@@ -162,19 +162,16 @@ class Link(Generic[T]):
         for link in links:
             if model_class is None:
                 model_class = link.model_class
-            else:
-                if model_class != link.model_class:
-                    raise ValueError(
-                        "All the links must have the same model class"
-                    )
+            elif model_class != link.model_class:
+                raise ValueError(
+                    "All the links must have the same model class"
+                )
             ids.append(link.ref.id)
         return await model_class.find(In("_id", ids)).to_list()  # type: ignore
 
     @classmethod
     async def fetch_many(cls, links: List["Link"]):
-        coros = []
-        for link in links:
-            coros.append(link.fetch())
+        coros = [link.fetch() for link in links]
         return await asyncio.gather(*coros)
 
     @classmethod
@@ -188,7 +185,7 @@ class Link(Generic[T]):
             return cls(ref=v, model_class=model_class)
         if isinstance(v, Link):
             return v
-        if isinstance(v, dict) or isinstance(v, BaseModel):
+        if isinstance(v, (dict, BaseModel)):
             return model_class.validate(v)
         new_id = parse_obj_as(model_class.__fields__["id"].type_, v)
         ref = DBRef(collection=model_class.get_collection_name(), id=new_id)

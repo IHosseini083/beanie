@@ -40,15 +40,14 @@ class DeleteMany(DeleteQuery):
             return (yield from self.document_model.get_motor_collection().delete_many(
                 self.find_query, session=self.session, **self.pymongo_kwargs
             ).__await__())
-        else:
-            self.bulk_writer.add_operation(
-                Operation(
-                    operation=DeleteManyPyMongo,
-                    first_query=self.find_query,
-                    object_class=self.document_model,
-                )
+        self.bulk_writer.add_operation(
+            Operation(
+                operation=DeleteManyPyMongo,
+                first_query=self.find_query,
+                object_class=self.document_model,
             )
-            return None
+        )
+        return None
 
 
 class DeleteOne(DeleteQuery):
@@ -61,12 +60,11 @@ class DeleteOne(DeleteQuery):
             return (yield from self.document_model.get_motor_collection().delete_one(
                 self.find_query, session=self.session, **self.pymongo_kwargs
             ).__await__())
-        else:
-            self.bulk_writer.add_operation(
-                Operation(
-                    operation=DeleteOnePyMongo,
-                    first_query=self.find_query,
-                    object_class=self.document_model,
-                )
+        self.bulk_writer.add_operation(
+            Operation(
+                operation=DeleteOnePyMongo,
+                first_query=self.find_query,
+                object_class=self.document_model,
             )
-            return None
+        )
+        return None

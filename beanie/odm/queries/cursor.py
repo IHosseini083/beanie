@@ -47,9 +47,7 @@ class BaseCursorQuery(Generic[CursorResultType]):
             raise RuntimeError("cursor was not set")
         next_item = await self.cursor.__anext__()
         projection = self.get_projection_model()
-        if projection is None:
-            return next_item
-        return parse_obj(projection, next_item)  # type: ignore
+        return next_item if projection is None else parse_obj(projection, next_item)
 
     def _get_cache(self) -> List[Dict[str, Any]]:
         ...

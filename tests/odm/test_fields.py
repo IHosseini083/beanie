@@ -60,9 +60,10 @@ async def test_custom_filed_types():
         ipv6network="2001:db00::0/24",
         timedelta=4782453,
         set_type={"one", "two", "three"},
-        tuple_type=tuple([3, "string"]),
+        tuple_type=(3, "string"),
         path="/etc/hosts",
     )
+
     custom2 = DocumentWithCustomFiledsTypes(
         color="magenta",
         decimal=Decimal("3.14") + Decimal(10) ** Decimal(-18),

@@ -166,13 +166,13 @@ async def test_find_one(saved_doc_default, state):
 
 
 async def test_find_many():
-    docs = []
-    for i in range(10):
-        docs.append(
-            DocumentWithTurnedOnStateManagement(
-                num_1=i, num_2=i + 1, internal=InternalDoc()
-            )
+    docs = [
+        DocumentWithTurnedOnStateManagement(
+            num_1=i, num_2=i + 1, internal=InternalDoc()
         )
+        for i in range(10)
+    ]
+
     await DocumentWithTurnedOnStateManagement.insert_many(docs)
 
     found_docs = await DocumentWithTurnedOnStateManagement.find(

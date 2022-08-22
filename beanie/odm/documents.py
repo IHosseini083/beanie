@@ -209,9 +209,8 @@ class Document(
                     if field_info.link_type in [
                         LinkTypes.DIRECT,
                         LinkTypes.OPTIONAL_DIRECT,
-                    ]:
-                        if isinstance(value, Document):
-                            await value.insert(link_rule=WriteRules.WRITE)
+                    ] and isinstance(value, Document):
+                        await value.insert(link_rule=WriteRules.WRITE)
                     if field_info.link_type == LinkTypes.LIST:
                         for obj in value:
                             if isinstance(obj, Document):
@@ -258,19 +257,18 @@ class Document(
             )
         if bulk_writer is None:
             return await document.insert(link_rule=link_rule, session=session)
-        else:
-            if link_rule == WriteRules.WRITE:
-                raise NotSupported(
-                    "Cascade insert with bulk writing not supported"
-                )
-            bulk_writer.add_operation(
-                Operation(
-                    operation=InsertOne,
-                    first_query=get_dict(document, to_db=True),
-                    object_class=type(document),
-                )
+        if link_rule == WriteRules.WRITE:
+            raise NotSupported(
+                "Cascade insert with bulk writing not supported"
             )
-            return None
+        bulk_writer.add_operation(
+            Operation(
+                operation=InsertOne,
+                first_query=get_dict(document, to_db=True),
+                object_class=type(document),
+            )
+        )
+        return None
 
     @classmethod
     async def insert_many(
@@ -335,14 +333,13 @@ class Document(
                     if field_info.link_type in [
                         LinkTypes.DIRECT,
                         LinkTypes.OPTIONAL_DIRECT,
-                    ]:
-                        if isinstance(value, Document):
-                            await value.replace(
-                                link_rule=link_rule,
-                                bulk_writer=bulk_writer,
-                                ignore_revision=ignore_revision,
-                                session=session,
-                            )
+                    ] and isinstance(value, Document):
+                        await value.replace(
+                            link_rule=link_rule,
+                            bulk_writer=bulk_writer,
+                            ignore_revision=ignore_revision,
+                            session=session,
+                        )
                     if field_info.link_type == LinkTypes.LIST:
                         for obj in value:
                             if isinstance(obj, Document):
@@ -391,11 +388,10 @@ class Document(
                     if field_info.link_type in [
                         LinkTypes.DIRECT,
                         LinkTypes.OPTIONAL_DIRECT,
-                    ]:
-                        if isinstance(value, Document):
-                            await value.save(
-                                link_rule=link_rule, session=session
-                            )
+                    ] and isinstance(value, Document):
+                        await value.save(
+                            link_rule=link_rule, session=session
+                        )
                     if field_info.link_type == LinkTypes.LIST:
                         for obj in value:
                             if isinstance(obj, Document):
@@ -650,12 +646,11 @@ class Document(
                     if field_info.link_type in [
                         LinkTypes.DIRECT,
                         LinkTypes.OPTIONAL_DIRECT,
-                    ]:
-                        if isinstance(value, Document):
-                            await value.delete(
-                                link_rule=DeleteRules.DELETE_LINKS,
-                                **pymongo_kwargs,
-                            )
+                    ] and isinstance(value, Document):
+                        await value.delete(
+                            link_rule=DeleteRules.DELETE_LINKS,
+                            **pymongo_kwargs,
+                        )
                     if field_info.link_type == LinkTypes.LIST:
                         for obj in value:
                             if isinstance(obj, Document):
@@ -723,9 +718,7 @@ class Document(
     @property  # type: ignore
     @saved_state_needed
     def is_changed(self) -> bool:
-        if self._saved_state == get_dict(self, to_db=True):
-            return False
-        return True
+        return self._saved_state != get_dict(self, to_db=True)
 
     def _collect_updates(
         self, old_dict: Dict[str, Any], new_dict: Dict[str, Any]
@@ -838,14 +831,13 @@ class Document(
         ActionRegistry.clean_actions(cls)
         for attr in dir(cls):
             f = getattr(cls, attr)
-            if inspect.isfunction(f):
-                if hasattr(f, "has_action"):
-                    ActionRegistry.add_action(
-                        document_class=cls,
-                        event_types=f.event_types,  # type: ignore
-                        action_direction=f.action_direction,  # type: ignore
-                        funct=f,
-                    )
+            if inspect.isfunction(f) and hasattr(f, "has_action"):
+                ActionRegistry.add_action(
+                    document_class=cls,
+                    event_types=f.event_types,  # type: ignore
+                    action_direction=f.action_direction,  # type: ignore
+                    funct=f,
+                )
 
     @classmethod
     async def init_model(
@@ -906,11 +898,11 @@ class Document(
 
     @classmethod
     def get_hidden_fields(cls):
-        return set(
+        return {
             attribute_name
             for attribute_name, model_field in cls.__fields__.items()
             if model_field.field_info.extra.get("hidden") is True
-        )
+        }
 
     def dict(
         self,
@@ -971,8 +963,7 @@ class Document(
         coros = []
         link_fields = self.get_link_fields()
         if link_fields is not None:
-            for ref in link_fields.values():
-                coros.append(self.fetch_link(ref.field))  # TODO lists
+            coros.extend(self.fetch_link(ref.field) for ref in link_fields.values())
         await asyncio.gather(*coros)
 
     @classmethod

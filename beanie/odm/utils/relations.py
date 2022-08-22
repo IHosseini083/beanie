@@ -60,7 +60,11 @@ def convert_ids(
             and k.split(".")[0] in doc.get_link_fields().keys()  # type: ignore
             and k.split(".")[1] == "id"
         ):
-            new_k = f"{k.split('.')[0]}._id" if fetch_links else f"{k.split('.')[0]}.$id"
+            new_k = (
+                f"{k.split('.')[0]}._id"
+                if fetch_links
+                else f"{k.split('.')[0]}.$id"
+            )
         else:
             new_k = k
 

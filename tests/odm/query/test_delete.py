@@ -103,7 +103,6 @@ async def test_delete_many_with_session(preset_documents, session):
         .set_session(session=session)
     )
 
-
     assert q.session == session
 
     delete_result = await q
@@ -117,8 +116,12 @@ async def test_delete_pymongo_kwargs(preset_documents):
     with pytest.raises(TypeError):
         await Sample.find_many(Sample.increment > 4).delete(wrong="integer_1")
 
-    delete_result = await Sample.find_many(Sample.increment > 4).delete(hint="integer_1")
+    delete_result = await Sample.find_many(Sample.increment > 4).delete(
+        hint="integer_1"
+    )
     assert delete_result is not None
 
-    delete_result = await Sample.find_one(Sample.increment > 4).delete(hint="integer_1")
+    delete_result = await Sample.find_one(Sample.increment > 4).delete(
+        hint="integer_1"
+    )
     assert delete_result is not None

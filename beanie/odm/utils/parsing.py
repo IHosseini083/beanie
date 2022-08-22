@@ -25,7 +25,9 @@ def parse_obj(
     if model._document_models is None:
         raise UnionHasNoRegisteredDocs
 
-    class_name = data["_class_id"] if isinstance(data, dict) else data._class_id
+    class_name = (
+        data["_class_id"] if isinstance(data, dict) else data._class_id
+    )
     if class_name not in model._document_models:
         raise DocWasNotRegisteredInUnionClass
     return parse_obj(model=model._document_models[class_name], data=data)

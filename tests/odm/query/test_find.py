@@ -41,7 +41,9 @@ async def test_find_many(preset_documents):
         assert a.nested.optional is None
 
     len_result = 0
-    async for a in Sample.find_many(Sample.integer > 1).find_many(Sample.nested.optional is None):  # noqa
+    async for a in Sample.find_many(Sample.integer > 1).find_many(
+        Sample.nested.optional is None
+    ):  # noqa
         assert a in result
         len_result += 1
 
@@ -68,7 +70,11 @@ async def test_find_many_skip(preset_documents):
         assert sample.nested.optional is None
 
     len_result = 0
-    async for sample in Sample.find_many(Sample.increment > 2).find_many(Sample.nested.optional is None).skip(1):  # noqa
+    async for sample in Sample.find_many(Sample.increment > 2).find_many(
+        Sample.nested.optional is None
+    ).skip(
+        1
+    ):  # noqa
         assert sample in result
         len_result += 1
 
@@ -96,7 +102,11 @@ async def test_find_many_limit(preset_documents):
         assert a.nested.optional is None
 
     len_result = 0
-    async for a in Sample.find_many(Sample.increment > 2).find(Sample.nested.optional is None).sort(Sample.increment).limit(2):  # noqa
+    async for a in Sample.find_many(Sample.increment > 2).find(
+        Sample.nested.optional is None
+    ).sort(Sample.increment).limit(
+        2
+    ):  # noqa
         assert a in result
         len_result += 1
 
@@ -208,7 +218,6 @@ async def test_sort(preset_documents):
 
 
 async def test_find_many_with_projection(preset_documents):
-
     class SampleProjection(BaseModel):
         string: str
         integer: int
@@ -240,7 +249,6 @@ async def test_find_many_with_projection(preset_documents):
 
 
 async def test_find_many_with_custom_projection(preset_documents):
-
     class SampleProjection(BaseModel):
         string: str
         i: int
@@ -285,7 +293,9 @@ async def test_find_many_with_session(preset_documents, session):
         assert a.nested.optional is None
 
     len_result = 0
-    async for a in Sample.find_many(Sample.integer > 1).find_many(Sample.nested.optional is None):  # noqa
+    async for a in Sample.find_many(Sample.integer > 1).find_many(
+        Sample.nested.optional is None
+    ):  # noqa
         assert a in result
         len_result += 1
 

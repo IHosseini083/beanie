@@ -389,9 +389,7 @@ class Document(
                         LinkTypes.DIRECT,
                         LinkTypes.OPTIONAL_DIRECT,
                     ] and isinstance(value, Document):
-                        await value.save(
-                            link_rule=link_rule, session=session
-                        )
+                        await value.save(link_rule=link_rule, session=session)
                     if field_info.link_type == LinkTypes.LIST:
                         for obj in value:
                             if isinstance(obj, Document):
@@ -963,7 +961,9 @@ class Document(
         coros = []
         link_fields = self.get_link_fields()
         if link_fields is not None:
-            coros.extend(self.fetch_link(ref.field) for ref in link_fields.values())
+            coros.extend(
+                self.fetch_link(ref.field) for ref in link_fields.values()
+            )
         await asyncio.gather(*coros)
 
     @classmethod

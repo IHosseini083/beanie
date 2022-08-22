@@ -610,15 +610,13 @@ class FindMany(
                 session=self.session,
                 **self.pymongo_kwargs,
             )
-        aggregation_pipeline: List[
-            Dict[str, Any]
-        ] = construct_lookup_queries(self.document_model)
+        aggregation_pipeline: List[Dict[str, Any]] = construct_lookup_queries(
+            self.document_model
+        )
 
         aggregation_pipeline.append({"$match": self.get_filter_query()})
 
-        sort_pipeline = {
-            "$sort": {i[0]: i[1] for i in self.sort_expressions}
-        }
+        sort_pipeline = {"$sort": {i[0]: i[1] for i in self.sort_expressions}}
         if sort_pipeline["$sort"]:
             aggregation_pipeline.append(sort_pipeline)
         if self.skip_number != 0:
